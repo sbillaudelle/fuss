@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <manifest namespace="org.cream" version="0.0.1">
     <component name="Melange" id="org.sbillaudelle.Fuss" version="0.1" type=".Module" entry="./fuss.py">
-        <description>The world's first usefull screensaver!</description>
+        <description>The world's first useful screensaver!</description>
         <license title="GPL" version="3+" />
 
         <use-feature id=".config" />
