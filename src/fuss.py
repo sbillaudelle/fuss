@@ -52,7 +52,7 @@ class XScreenSaverSession(object):
         :rtype: `int`
         """
         reply = screensaver.DrawableMixin.query_info(self.root).reply()
-        return reply.state, int(round(float(reply.ms_since_user_input) / 1000, 1))
+        return reply.state, int(round(float(reply.ms_until_server) / 1000, 1)), int(round(float(reply.ms_since_user_input) / 1000, 1))
 
 
 class Text(clutter.CairoTexture):
@@ -229,9 +229,9 @@ class Fuss(cream.Module):
         if self.date.get_text() != d:
             self.date.set_text(d)
 
-        if self.screensaver.query()[0] == 0 and self.screensaver.query()[1] >= self.config.timeout and not self.visible:
+        if self.screensaver.query()[0] == 1 and not self.visible:
             self.fade_in()
-        elif self.screensaver.query()[1] == 0 and self.visible:
+        elif self.screensaver.query()[0] == 0 and self.visible:
             self.fade_out()
 
         return True

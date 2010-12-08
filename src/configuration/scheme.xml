@@ -1,4 +1,3 @@
 <configuration>
     <background_image label="Background Image" type="char">~/Bilder/Hintergrundbilder/sea.jpg</background_image>
-    <timeout label="Timeout" type="integer">10</timeout>
 </configuration>
