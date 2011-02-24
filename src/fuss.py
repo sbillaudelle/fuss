@@ -27,7 +27,7 @@ import pango
 import pangocairo
 
 import ooxcb
-from ooxcb.protocol import xproto, screensaver
+from ooxcb.protocol import xproto, screensaver, composite
 
 import cream
 import cream.gui
@@ -133,7 +133,6 @@ class Fuss(cream.Module):
         self.screensaver = XScreenSaverSession()
 
         self.window = gtk.Window()
-        #self.window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DESKTOP)
         self.window.fullscreen()
 
         self.window.set_opacity(0)
@@ -188,6 +187,18 @@ class Fuss(cream.Module):
 
         self.update()
         gobject.timeout_add(333, self.update)
+        
+        self.connection = ooxcb.connect()
+        self.root = self.connection.setup.roots[self.connection.pref_screen].root
+
+        self.cow = gtk.gdk.window_foreign_new(composite.WindowMixin.get_overlay_window(self.root).reply().overlay_win.xid)
+        self.window.window.redirect_to_drawable(self.cow, 0, 0, 0, 0, self.window.get_allocation().width, self.window.get_allocation().height)
+        
+        
+    def quit(self):
+
+        composite.WindowMixin.release_overlay_window(self.root)
+        cream.Module.quit(self)
 
 
     def fade_in(self):
@@ -196,6 +207,7 @@ class Fuss(cream.Module):
             self.window.set_opacity(status)
 
         self.visible = True
+        self.messages.debug("Fading in...")
 
         self.window.window.input_shape_combine_region(gtk.gdk.region_rectangle((0, 0, 1440, 900)), 0, 0)
 
@@ -211,6 +223,7 @@ class Fuss(cream.Module):
 
         self.visible = False
         self.window.window.input_shape_combine_region(gtk.gdk.Region(), 0, 0)
+        self.messages.debug("Fading out...")
 
         t = cream.gui.Timeline(1000, cream.gui.CURVE_SINE)
         t.connect('update', fade)
@@ -229,9 +242,12 @@ class Fuss(cream.Module):
         if self.date.get_text() != d:
             self.date.set_text(d)
 
-        if self.screensaver.query()[0] == 1 and not self.visible:
+        screensaver_info = self.screensaver.query()
+        self.messages.debug("'{0}' seconds left until fading in...".format(screensaver_info[1]))
+
+        if screensaver_info[0] == 1 and not self.visible:
             self.fade_in()
-        elif self.screensaver.query()[0] == 0 and self.visible:
+        elif screensaver_info[0] == 0 and self.visible:
             self.fade_out()
 
         return True
